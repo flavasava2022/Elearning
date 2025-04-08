@@ -2,7 +2,7 @@
 
 @theme {
   /* Base colors */
-  --color-white: #FFFFFF;
+  --color-white: #ffffff;
   --color-black: #000000;
 
   /* Primary */
@@ -209,4 +209,31 @@
   --color-color-1: #ff7530;
   --color-color-2: #47d582;
   --color-color-3: #a480f8;
+}
+
+.step-list__item {
+  clip-path: polygon(0 0, 96% 0, 100% 50%, 96% 100%, 0 100%, 4% 47%);
+  
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 9;
+}
+
+.modal {
+  top: 50%;
+  left: 50%;
+  width: 30rem;
+  max-width: 90%;
+  z-index: 10;
+}
+
+.modal h2 {
+  margin-top: 0;
 }

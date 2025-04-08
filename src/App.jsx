@@ -1,11 +1,4 @@
-import {
-  Outlet,
-  Link,
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-import { Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { supabase } from "./utils/supabase";
@@ -15,6 +8,13 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import ErrorPage from "./pages/ErrorPage";
 import HomeDashboard from "./pages/dashboard/HomeDashboard";
 import Loading from "./components/Loading";
+import SettingsLayout from "./pages/settings/SettingsLayout";
+import MyDetails from "./pages/settings/MyDetails";
+import Profile from "./pages/settings/Profile";
+import Password from "./pages/settings/Password";
+import Plan from "./pages/settings/Plan";
+import Billing from "./pages/settings/Billing";
+import CreateCourse from "./pages/CreateCourse/CreateCourse";
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -52,25 +52,25 @@ export default function App() {
         { path: "/dashboard", element: <HomeDashboard /> },
         // { path: "/dashboard/data", element: <Dashboard /> },
         // { path: "/dashboard/course/:courseId", element: <CoursePage /> },
-        // {
-        //   path: "/dashboard/mycourses/create/:courseId?",
-        //   element: <CreateCourse />,
-        // },
-        // {
-        //   path: "/dashboard/settings",
-        //   element: <SettingsLayout />,
-        //   children: [
-        //     { path: "/dashboard/settings", element: <MyDetails /> },
-        //     { path: "/dashboard/settings/profile", element: <Profile /> },
-        //     { path: "/dashboard/settings/password", element: <Password /> },
-        //     { path: "/dashboard/settings/plan", element: <Plan /> },
-        //     { path: "/dashboard/settings/billing", element: <Billing /> },
-        //     {
-        //       path: "/dashboard/settings/notification",
-        //       element: <Notification />,
-        //     },
-        //   ],
-        // },
+        {
+          path: "/dashboard/mycourses/create/:courseId?",
+          element: <CreateCourse />,
+        },
+        {
+          path: "/dashboard/settings",
+          element: <SettingsLayout />,
+          children: [
+            { path: "/dashboard/settings", element: <MyDetails /> },
+            { path: "/dashboard/settings/profile", element: <Profile /> },
+            { path: "/dashboard/settings/password", element: <Password /> },
+            { path: "/dashboard/settings/plan", element: <Plan /> },
+            { path: "/dashboard/settings/billing", element: <Billing /> },
+            {
+              path: "/dashboard/settings/notification",
+              element: <Notification />,
+            },
+          ],
+        },
       ],
     },
   ]);
