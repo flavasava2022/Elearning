@@ -10,13 +10,13 @@ import { useFormStatus } from "react-dom";
 import { useNavigate } from "react-router-dom";
 
 import { useSelector } from "react-redux";
-import { inputValidate } from "../../utils/forms";
+
 import { supabase, uploadFile } from "../../utils/supabase";
 import { InputField } from "../../components/InputField";
-import { div } from "motion/react-client";
-import UploadButton from "../../components/UploadButton";
+
 import ImageUpload from "./imageUpload";
 import { CircleX } from "lucide-react";
+
 export default function CourseDetails({ courseData, setIndex }) {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.userData);
@@ -24,20 +24,20 @@ export default function CourseDetails({ courseData, setIndex }) {
   const [scope, animate] = useAnimate();
   const [errorMsg, setErrorMsg] = useState(null);
   async function signupActions(pervData, formData) {
-    const courseData = Object.fromEntries(formData);
+    const formDataFields = Object.fromEntries(formData);
     let errors = {};
     setErrorMsg(null);
 
-    if (courseData?.pic?.size === 0) {
+    if (!courseData?.image_url && formDataFields?.pic?.size === 0) {
       errors.pic = "This field is required.";
     }
-    if (courseData?.courseName?.trim().length === 0) {
+    if (formDataFields?.courseName?.trim().length === 0) {
       errors.courseName = "This field is required.";
     }
-    if (courseData?.courseDescription?.trim().length === 0) {
+    if (formDataFields?.courseDescription?.trim().length === 0) {
       errors.courseDescription = "This field is required.";
     }
-    console.log(errors);
+
     animate(`input`, { borderColor: "#D0D5DD" });
     if (Object.keys(errors)?.length > 0) {
       console.log(errors);
@@ -49,24 +49,72 @@ export default function CourseDetails({ courseData, setIndex }) {
         );
       });
 
-      return { errors: errors, defaultValues: courseData };
+      return { errors: errors, defaultValues: formDataFields };
     } else {
-      const fileName = `${user.email}_${courseData?.courseName}_course-pic`;
-      try {
-        const url = await uploadFile(courseData.pic, fileName);
-        if (url) {
-          const { error: updateError } = await supabase.from("courses").insert({
-            title: courseData?.courseName,
-            description: courseData?.courseDescription,
-            image_url: url,
-            instructor_name: `${user?.first_name} ${user?.last_name}`,
-            instructor_id: user?.id,
-            published: 2,
-          });
+      const fileName = `${user.email}_${formDataFields?.courseName}_course-pic`;
 
-          if (!updateError) {
-            console.log("done");
-            setIndex(2);
+      try {
+        if (courseData) {
+          console.log("course details exist");
+          if (formDataFields?.pic?.size === 0) {
+            const { data, error: updateError } = await supabase
+              .from("courses")
+              .update({
+                title: formDataFields?.courseName,
+                description: formDataFields?.courseDescription,
+                instructor_name: `${user?.first_name} ${user?.last_name}`,
+                instructor_id: user?.id,
+              })
+              .eq("id", courseData?.id)
+              .select()
+              .single();
+
+            if (data) {
+              setIndex(2);
+            }
+          } else {
+            const url = await uploadFile(formDataFields.pic, fileName);
+            if (url) {
+              const { data, error: updateError } = await supabase
+                .from("courses")
+                .update({
+                  title: formDataFields?.courseName,
+                  description: formDataFields?.courseDescription,
+                  image_url: url,
+                  instructor_name: `${user?.first_name} ${user?.last_name}`,
+                  instructor_id: user?.id,
+                })
+                .eq("id", courseData?.id)
+                .select()
+                .single();
+
+              if (data) {
+                setIndex(2);
+              }
+            }
+          }
+        } else {
+          console.log("course details not exist");
+          const url = await uploadFile(formDataFields.pic, fileName);
+          if (url) {
+            const { data, error: updateError } = await supabase
+              .from("courses")
+              .insert({
+                title: formDataFields?.courseName,
+                description: formDataFields?.courseDescription,
+                image_url: url,
+                instructor_name: `${user?.first_name} ${user?.last_name}`,
+                instructor_id: user?.id,
+                published: 2,
+              })
+              .select()
+              .single();
+
+            if (data) {
+              setIndex(2);
+
+              navigate(`/dashboard/mycourses/create/${data?.id}`);
+            }
           }
         }
       } catch (err) {
@@ -74,7 +122,7 @@ export default function CourseDetails({ courseData, setIndex }) {
       }
       return {
         errors: null,
-        defaultValues: pervData,
+        defaultValues: formDataFields,
       };
     }
   }
@@ -84,14 +132,14 @@ export default function CourseDetails({ courseData, setIndex }) {
     defaultValues: {
       courseName: courseData?.title,
       courseDescription: courseData?.description,
-      pic: courseData?.image_url,
     },
   });
+
   return (
-    <div className="p-2 flex flex-col gap-4">
+    <div className="p-2 flex flex-col gap-4 h-full w-full">
       <h1 className="font-bold text-[28px]">Course Details</h1>
       <motion.form
-        className="flex flex-col gap-6"
+        className="flex flex-col gap-6 h-full"
         action={formActions}
         ref={scope}
       >
@@ -139,7 +187,7 @@ const SubmitButton = () => {
   return (
     <button
       disabled={pending}
-      className="w-full bg-linear-to-r from-[#0179FE] to-[#4893FF] rounded-md p-2 text-white cursor-pointer font-[inter]"
+      className="w-fit bg-primary rounded-md p-2 px-8 text-white cursor-pointer font-[inter] mr-0 ml-auto mt-auto"
     >
       {pending ? "Loading..." : "Next"}
     </button>

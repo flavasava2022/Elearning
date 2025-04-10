@@ -7,34 +7,33 @@ import { CircleCheck, CircleDot, Dot } from "lucide-react";
 
 export default function Steps({ status }) {
   return (
-    <ul className=" w-full flex items-center justify-center h-[90px] gap-6 py-4">
+    <ul className="w-full flex flex-wrap md:flex-nowrap justify-center items-center gap-4 md:gap-6 py-4 px-2">
       <Step text={"Course Details"} status={status} index={1} />
 
       <Step text={"Upload Videos"} status={status} index={2} />
-
-      <Step text={"About Course"} status={status} index={3} />
-
-      <Step text={"Publish Course"} status={status} index={4} />
     </ul>
   );
 }
 
 function Step({ text, status, index }) {
+  const isActive = Number(status) === index;
+  const isComplete = Number(status) > index;
   return (
     <motion.li
       key={index}
       animate={{
-        backgroundColor:
-          Number(status) === Number(index) ? "var(--color-primary)" : "#ffffff",
+        backgroundColor: isActive ? "var(--color-primary)" : "#f2f4f6",
+
+        scale: isActive ? 1.05 : 1,
       }}
       className="step-list__item shadow w-full h-full flex items-center p-4 px-8 justify-start gap-4"
     >
-      {Number(status) === Number(index) ? (
-        <CircleDot className="w-[20px] text-white" />
-      ) : Number(status) > Number(index) ? (
-        <CircleCheck className="w-[20px] text-primary" />
+      {isActive ? (
+        <CircleDot className="w-5 h-5 text-white" />
+      ) : isComplete ? (
+        <CircleCheck className="w-5 h-5 text-primary" />
       ) : (
-        <Dot className="w-[40px] h-[40px] text-black" />
+        <Dot className="w-6 h-6 text-black" />
       )}
 
       <motion.p

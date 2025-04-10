@@ -1,19 +1,22 @@
 import { useAnimate } from "motion/react";
 import React, { useActionState, useState } from "react";
-import { supabase } from "../../utils/supabase";
+
 import { useFormStatus } from "react-dom";
 
-import Modal from "../../components/Modal";
 import { AnimatePresence, motion } from "framer-motion";
 import { CircleX } from "lucide-react";
-import { InputField } from "../../components/InputField";
+
 import toast from "react-hot-toast";
+import { p } from "motion/react-client";
+import { supabase } from "../../../../utils/supabase";
+import { InputField } from "../../../../components/InputField";
+import Modal from "../../../../components/Modal";
 
 export default function CreateModuleModal({
   id,
   onClose,
-  setItems,
-  setConfirmedItems,
+  setModulesData,
+  setConfirmedModulesData,
   position,
 }) {
   const [scope, animate] = useAnimate();
@@ -50,8 +53,8 @@ export default function CreateModuleModal({
           .single();
         if (!updateError) {
           toast.success("Module Successfully Added!");
-          setItems((prev) => [...prev, newModule]);
-          setConfirmedItems((prev) => [...prev, newModule]);
+          setModulesData((prev) => [...prev, newModule]);
+          setConfirmedModulesData((prev) => [...prev, newModule]);
           onClose();
         } else {
           toast.error("Something Wrong Happened!");
@@ -68,7 +71,14 @@ export default function CreateModuleModal({
     errors: null,
   });
   return (
-    <Modal title="Add New Module" onClose={onClose}>
+    <Modal
+      title={
+        <p className="w-fit bg-primary p-2 text-white rounded-md">
+          Add New Module
+        </p>
+      }
+      onClose={onClose}
+    >
       <motion.form
         className="flex flex-col gap-6 p-4 w-full"
         action={formActions}

@@ -1,14 +1,23 @@
 import { useAnimate } from "motion/react";
 import React, { useActionState, useState } from "react";
-import { supabase } from "../../utils/supabase";
+
 import { useFormStatus } from "react-dom";
 
-import Modal from "../../components/Modal";
 import { AnimatePresence, motion } from "framer-motion";
-import { InputField } from "../../components/InputField";
-import { CircleX } from "lucide-react";
 
-export default function CreateLessonModal({ id, onClose }) {
+import { CircleX } from "lucide-react";
+import toast from "react-hot-toast";
+import { supabase } from "../../../../utils/supabase";
+import Modal from "../../../../components/Modal";
+import { InputField } from "../../../../components/InputField";
+
+export default function CreateLessonModal({
+  id,
+  onClose,
+  setLessonsData,
+  setConfirmedLessonsData,
+  position,
+}) {
   const [scope, animate] = useAnimate();
   const [errorMsg, setErrorMsg] = useState(null);
   async function signupActions(pervData, formData) {
@@ -18,9 +27,6 @@ export default function CreateLessonModal({ id, onClose }) {
 
     if (lessonData?.lessonName?.trim().length === 0) {
       errors.lessonName = "This field is required.";
-    }
-    if (lessonData?.order?.trim().length === 0) {
-      errors.order = "This field is required.";
     }
     if (lessonData?.lessonUrl?.trim().length === 0) {
       errors.lessonUrl = "This field is required.";
@@ -41,21 +47,27 @@ export default function CreateLessonModal({ id, onClose }) {
       return { errors: errors, defaultValues: pervData };
     } else {
       try {
-        const { error: updateError } = await supabase.from("lessons").insert({
-          module_id: id,
-          title: lessonData?.lessonName,
-          order: lessonData?.order,
-          content_url: lessonData?.lessonUrl,
-          duration_minutes: lessonData?.duration,
-        });
+        const { data: newLesson, error: updateError } = await supabase
+          .from("lessons")
+          .insert({
+            module_id: id,
+            title: lessonData?.lessonName,
+            order: position,
+            content_url: lessonData?.lessonUrl,
+            duration_minutes: lessonData?.duration,
+          })
+          .select()
+          .single();
 
-        if (!updateError) {
-          console.log("done");
+        if (newLesson) {
+          toast.success("Lesson Successfully Added!");
           onClose();
+          setLessonsData((prev) => [...prev, newLesson]);
+          setConfirmedLessonsData((prev) => [...prev, newLesson]);
+        } else {
+          toast.error("Something Wrong Happened!");
         }
-      } catch (err) {
-        console.error("Error uploading file:", err);
-      }
+      } catch (updateError) {}
       return {
         errors: null,
         defaultValues: pervData,
@@ -67,7 +79,14 @@ export default function CreateLessonModal({ id, onClose }) {
     errors: null,
   });
   return (
-    <Modal title="Add New Lesson" onClose={onClose}>
+    <Modal
+      title={
+        <p className="w-fit bg-primary p-2 text-white rounded-md">
+          Add New Lesson
+        </p>
+      }
+      onClose={onClose}
+    >
       <motion.form
         className="flex flex-col gap-6 p-4"
         action={formActions}
@@ -80,13 +99,7 @@ export default function CreateLessonModal({ id, onClose }) {
             formState={formState}
             type="text"
             placeHolder="Enter Lesson Name"
-          />
-          <InputField
-            label="Order"
-            name="order"
-            formState={formState}
-            type="number"
-            placeHolder="Enter Lesson order (Starts From Zero)"
+            width={"full"}
           />
         </div>
         <div className="flex items-center gap-4">
@@ -110,20 +123,30 @@ export default function CreateLessonModal({ id, onClose }) {
             <CircleX className="w-[18px] text-danger" /> {errorMsg}
           </div>
         )}
-        <SubmitButton />
+        <SubmitButton onClose={onClose} />
       </motion.form>
     </Modal>
   );
 }
-const SubmitButton = () => {
+const SubmitButton = ({ onClose }) => {
   const { pending } = useFormStatus();
 
   return (
-    <button
-      disabled={pending}
-      className="w-fit bg-linear-to-r from-[#0179FE] to-[#4893FF] rounded-md p-2 px-4 text-white cursor-pointer font-[inter] ml-auto mr-0"
-    >
-      {pending ? "Loading..." : "Create"}
-    </button>
+    <div className="flex gap-2 ml-auto mr-0">
+      <button
+        type="button"
+        disabled={pending}
+        onClick={onClose}
+        className="w-fit bg-primary rounded-md p-2 px-4 text-white cursor-pointer font-[inter] "
+      >
+        Close
+      </button>
+      <button
+        disabled={pending}
+        className="w-fit bg-primary rounded-md p-2 px-4 text-white cursor-pointer font-[inter] "
+      >
+        {pending ? "Loading..." : "Create"}
+      </button>
+    </div>
   );
 };
